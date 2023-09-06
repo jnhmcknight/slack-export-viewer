@@ -101,6 +101,7 @@ class SlackFormatter(object):
         message = message.replace("<!here|@here>", "<a>@here</a>")
         message = message.replace("<!everyone>", "<a>@everyone</a>")
         message = message.replace("<!everyone|@everyone>", "<a>@everyone</a>")
+        message = message.replace("<U00>", "<a><b>Someone</b></a>")
         return message
 
     def render_text(self, message, process_markdown=True):
