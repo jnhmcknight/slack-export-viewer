@@ -73,7 +73,9 @@
                     {% endfor %}
                     {% for reaction in message.reactions %}
                         <div class="message-reaction">
-                        {{ reaction.name }} {{ reaction.usernames|join(', ') }}
+                            <a title="{{ reaction.usernames|join(', ') }} reacted with {{ reaction.name }}">
+                                {{reaction.icon}}
+                            </a>
                         </div>
                     {% endfor %}
 		</div>

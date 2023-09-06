@@ -46,18 +46,65 @@ class SlackFormatter(object):
                 "is_bot": True,
                 "is_app_user": True
             })
+
         user_id = message.get("user") or message.get("bot_id")
-        if user_id in self.__USER_DATA:
-            return self.__USER_DATA.get(user_id)
-        logging.error("unable to find user in %s", message)
+        if user_id not in self.__USER_DATA:
+            if not message.get("user_profile"):
+                logging.error("unable to find user in %s", message)
+                return None
+
+            new_user_data = {
+                "id": user_id,
+                "team_id": message["user_profile"].get("team"),
+                "name": message["user_profile"].get("name"),
+                "real_name": message["user_profile"].get("real_name"),
+                "profile": {},
+                "color": "db3150",
+                "tz": "America/New_York",
+                "tz_label": "Eastern Daylight Time",
+                "tz_offset": -14400,
+                "deleted": False,
+                "is_admin": False,
+                "is_owner": False,
+                "is_primary_owner": False,
+                "is_restricted": True,
+                "is_ultra_restricted": True,
+                "is_bot": False,
+                "is_app_user": False,
+                "updated": 1689891879,
+                "is_email_confirmed": True,
+            }
+
+            biggest_image = 0
+            for k,v in message["user_profile"].items():
+                new_user_data["profile"].update({k: v})
+
+                if k.startswith("image_"):
+                    img_size = int(k.split("_")[1])
+                    if img_size > biggest_image:
+                        biggest_image = img_size
+
+            if "image_512" not in new_user_data["profile"]:
+                new_user_data["profile"]["image_512"] = new_user_data["profile"][f"image_{biggest_image}"]
+
+            if "email" not in new_user_data["profile"]:
+                new_user_data["email"] = "unknown"
+
+            self.__USER_DATA.update({user_id: User(new_user_data)})
+
+        return self.__USER_DATA.get(user_id)
+
+    def replace_special_mentions(self, message):
+        message = message.replace("<!channel>", "<a>@channel</a>")
+        message = message.replace("<!channel|@channel>", "<a>@channel</a>")
+        message = message.replace("<!here>", "<a>@here</a>")
+        message = message.replace("<!here|@here>", "<a>@here</a>")
+        message = message.replace("<!everyone>", "<a>@everyone</a>")
+        message = message.replace("<!everyone|@everyone>", "<a>@everyone</a>")
+        return message
 
     def render_text(self, message, process_markdown=True):
-        message = message.replace("<!channel>", "@channel")
-        message = message.replace("<!channel|@channel>", "@channel")
-        message = message.replace("<!here>", "@here")
-        message = message.replace("<!here|@here>", "@here")
-        message = message.replace("<!everyone>", "@everyone")
-        message = message.replace("<!everyone|@everyone>", "@everyone")
+        message = self.replace_special_mentions(message)
 
         # Handle mentions of users, channels and bots (e.g "<@U0BM1CGQY|calvinchanubc> has joined the channel")
         message = self._MENTION_PAT.sub(self._sub_annotated_mention, message)
@@ -108,12 +155,12 @@ class SlackFormatter(object):
         ref_id = matchobj.group(1)[1:]  # drop #/@ from the start, we don't care
         annotation = matchobj.group(2)
         if ref_id.startswith('C'):
-            mention_format = "<b>#{}</b>"
+            mention_format = "<a><b>#{}</b></a>"
             if not annotation:
                 channel = self.__CHANNEL_DATA.get(ref_id)
                 annotation = channel["name"] if channel else ref_id
         else:
-            mention_format = "@{}"
+            mention_format = "<a>@{}</a>"
             if not annotation:
                 user = self.__USER_DATA.get(ref_id)
                 annotation = user.display_name if user else ref_id
