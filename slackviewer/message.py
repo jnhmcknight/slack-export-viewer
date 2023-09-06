@@ -11,6 +11,7 @@ class Message(object):
     def __init__(self, formatter, message):
         self._formatter = formatter
         self._message = message
+        self._thread = []
 
     ##############
     # Properties #
@@ -110,6 +111,16 @@ class Message(object):
     @property
     def subtype(self):
         return self._message.get("subtype")
+
+    @property
+    def thread(self):
+        return self._thread
+
+    @thread.setter
+    def thread(self, value):
+        if not isinstance(value, list):
+            raise ValueError('Thread must be a list!')
+        self._thread = value
 
 
 class LinkAttachment(object):

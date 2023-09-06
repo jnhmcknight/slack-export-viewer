@@ -76,6 +76,13 @@
                         {{ reaction.name }} {{ reaction.usernames|join(', ') }}
                         </div>
                     {% endfor %}
+                    {% if message.thread %}
+                        <div class="message-thread-container">
+                            {% for reply in message.thread %}
+                                {{ render_message(reply, preview_size=preview_size, no_external_references=no_external_references) }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 		</div>
             </div>
         </div>

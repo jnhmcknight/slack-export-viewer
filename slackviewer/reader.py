@@ -202,8 +202,6 @@ class Reader(object):
         :return: None
         """
         for channel_name in channel_data.keys():
-            replies = {}
-
             user_ts_lookup = {}
             items_to_remove = []
             for i, m in enumerate(channel_data[channel_name]):
@@ -238,29 +236,12 @@ class Reader(object):
                     sorted_reply_objects = sorted(reply_objects, key=lambda tup: tup[0])
                     for reply_obj_tuple in sorted_reply_objects:
                         items_to_remove.append(reply_obj_tuple[0])
-                    replies[location] = [tup[1] for tup in sorted_reply_objects]
-            # Create an OrderedDict of thread locations and replies in reverse numerical order
-            sorted_threads = OrderedDict(sorted(replies.items(), reverse=True))
+                    message.thread = [tup[1] for tup in sorted_reply_objects]
 
             for idx_to_remove in sorted(items_to_remove, reverse=True):
-                # threads location hotfix
-                channel_data[channel_name][idx_to_remove] = {'user': -1}
+                # clear replies from main channel messages
+                channel_data[channel_name].pop(idx_to_remove)
 
-            # Iterate through the threads and insert them back into channel_data[channel_name] in response order
-            for grouping in sorted_threads.items():
-                location = grouping[0] + 1
-                for reply in grouping[1]:
-                    msgtext = reply._message.get("text")
-                    if not msgtext or not msgtext.startswith("**Thread Reply:**"):
-                        reply._message["text"] = "**Thread Reply:** {}".format(msgtext)
-                    channel_data[channel_name].insert(location, reply)
-                    location += 1
-            # threads location hotfix
-            data_with_sorted_threads = []
-            for i, item in enumerate(channel_data[channel_name]):
-                if isinstance(item, Message):
-                    data_with_sorted_threads.append(item)
-            channel_data[channel_name] = data_with_sorted_threads.copy()
         return channel_data
 
     def _read_from_json(self, file):
