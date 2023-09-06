@@ -81,6 +81,18 @@ body {
     margin-bottom: 20px;
 }
 
+.message-thread-container {
+    margin-left: 40px;
+}
+
+.message-thread-container:first-child {
+    margin-top: 20px;
+}
+
+.message-thread-container:last-child {
+    margin-bottom: 20px;
+}
+
 .message-container .user_icon {
     background-color: rgb(248, 244, 240);
     width: 36px;
