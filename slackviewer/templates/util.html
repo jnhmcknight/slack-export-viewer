@@ -71,13 +71,17 @@
                             {%endif%}
                         </div>
                     {% endfor %}
-                    {% for reaction in message.reactions %}
-                        <div class="message-reaction">
-                            <a title="{{ reaction.usernames|join(', ') }} reacted with {{ reaction.name }}">
-                                {{reaction.icon}}
-                            </a>
+                    {% if message.reactions %}
+                        <div class="message-reaction-container">
+                            {% for reaction in message.reactions %}
+                                <div class="message-reaction">
+                                    <a title="{{ reaction.usernames|join(', ') }} reacted with {{ reaction.name }}">
+                                        {{reaction.icon}}
+                                    </a>
+                                </div>
+                            {% endfor %}
                         </div>
-                    {% endfor %}
+                    {% endif %}
                     {% if message.thread %}
                         <div class="message-thread-container">
                             {% for reply in message.thread %}
