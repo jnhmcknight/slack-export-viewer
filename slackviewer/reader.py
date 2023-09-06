@@ -182,8 +182,8 @@ class Reader(object):
 
                     # sorts the messages in the json file
                     day_messages.sort(key=Reader._extract_time) 
-                 
-                    messages.extend([Message(formatter, d) for d in day_messages])
+
+                    messages.extend([Message(formatter, d) for d in day_messages if d.get("ts")])
 
             chats[name] = messages
         chats = self._build_threads(chats)
